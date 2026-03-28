@@ -1,12 +1,19 @@
 import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { AnimatedNumber } from "./components/AnimatedNumber";
 import { HeroConstellation } from "./components/HeroConstellation";
+import { Reveal } from "./components/Reveal";
+import { useLenis } from "./hooks/useLenis";
 
-gsap.registerPlugin(ScrollTrigger);
-
-const navigation = ["Platform", "Services", "Defense Stack", "Resources", "About"];
+const navigation = [
+  "Platform",
+  "Services",
+  "Defense Stack",
+  "Dashboard",
+  "Resources",
+  "About"
+];
 
 const services = [
   {
@@ -80,9 +87,16 @@ const processSteps = [
 ];
 
 const metrics = [
-  { label: "Protected endpoints", value: "128", delta: "+18%" },
-  { label: "Threats contained", value: "4.3k", delta: "+27%" },
-  { label: "Median alert latency", value: "320ms", delta: "-11%" }
+  { label: "Protected endpoints", value: 128, delta: "+18%" },
+  { label: "Threats contained", value: 4.3, decimals: 1, suffix: "k", delta: "+27%" },
+  { label: "Median alert latency", value: 320, suffix: "ms", delta: "-11%" }
+];
+
+const dashboardStats = [
+  { label: "Total alerts", value: 4372, accent: true, delta: "+15%" },
+  { label: "Tagged assets", value: 120, delta: "+15%" },
+  { label: "Critical incidents", value: 1572, delta: "-5%" },
+  { label: "Analysts online", value: 572, delta: "+10%" }
 ];
 
 const orbitItems = [
@@ -165,12 +179,18 @@ const faqs = [
   }
 ];
 
-const fadeUp = {
-  initial: { opacity: 0, y: 32 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, amount: 0.25 },
-  transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] }
-};
+const reportMetrics = [
+  { label: "System efficiency", value: 99.2, decimals: 1, suffix: "%", width: "82%" },
+  { label: "Threat remediation", value: 87.4, decimals: 1, suffix: "%", width: "68%" },
+  { label: "Analyst focus time", value: 74.8, decimals: 1, suffix: "%", width: "59%" }
+];
+
+const inViewMotion = (delay = 0, amount = 0.2, y = 30) => ({
+  initial: { opacity: 0, y, filter: "blur(10px)" },
+  whileInView: { opacity: 1, y: 0, filter: "blur(0px)" },
+  viewport: { once: true, amount },
+  transition: { duration: 0.78, delay, ease: [0.22, 1, 0.36, 1] }
+});
 
 function Icon({ type }) {
   switch (type) {
@@ -227,16 +247,17 @@ function Icon({ type }) {
 
 function SectionHeading({ eyebrow, title, copy, align = "left" }) {
   return (
-    <div className={`section-heading ${align}`}>
+    <Reveal className={`section-heading ${align}`} y={34} blur={12} amount={0.4}>
       {eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}
       <h2>{title}</h2>
       {copy ? <p>{copy}</p> : null}
-    </div>
+    </Reveal>
   );
 }
 
 function App() {
   const pageRef = useRef(null);
+  useLenis();
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -281,19 +302,6 @@ function App() {
         yoyo: true,
         ease: "sine.inOut"
       });
-
-      gsap.utils.toArray(".reveal").forEach((element) => {
-        gsap.from(element, {
-          y: 64,
-          opacity: 0,
-          duration: 1.1,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: element,
-            start: "top 82%"
-          }
-        });
-      });
     }, pageRef);
 
     return () => ctx.revert();
@@ -337,21 +345,41 @@ function App() {
               </p>
 
               <div className="hero-actions">
-                <a className="button button-primary" href="#contact">
+                <motion.a
+                  className="button button-primary"
+                  href="#contact"
+                  whileHover={{ y: -4, scale: 1.02 }}
+                  whileTap={{ scale: 0.985 }}
+                >
                   Talk to a Specialist
-                </a>
-                <a className="button button-secondary" href="#dashboard">
+                </motion.a>
+                <motion.a
+                  className="button button-secondary"
+                  href="#dashboard"
+                  whileHover={{ y: -4, scale: 1.02 }}
+                  whileTap={{ scale: 0.985 }}
+                >
                   See Live Dashboard
-                </a>
+                </motion.a>
               </div>
 
               <div className="hero-metric-row">
-                {metrics.map((metric) => (
-                  <div className="hero-badge" key={metric.label}>
+                {metrics.map((metric, index) => (
+                  <motion.div
+                    className="hero-badge interactive-card"
+                    key={metric.label}
+                    whileHover={{ y: -8, rotateX: 4, rotateY: index % 2 === 0 ? -4 : 4 }}
+                    transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                  >
                     <span>{metric.label}</span>
-                    <strong>{metric.value}</strong>
+                    <AnimatedNumber
+                      className="hero-metric-value"
+                      value={metric.value}
+                      decimals={metric.decimals ?? 0}
+                      suffix={metric.suffix ?? ""}
+                    />
                     <em>{metric.delta}</em>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -372,11 +400,7 @@ function App() {
           </div>
         </section>
 
-        <motion.section
-          className="services-section reveal"
-          id="services"
-          {...fadeUp}
-        >
+        <section className="services-section" id="services">
           <SectionHeading
             eyebrow="Our services"
             title="A premium command layer for every security workflow."
@@ -384,10 +408,11 @@ function App() {
           />
 
           <div className="service-grid">
-            {services.map((service) => (
+            {services.map((service, index) => (
               <motion.article
-                className="service-card"
+                className="service-card interactive-card"
                 key={service.title}
+                {...inViewMotion(index * 0.05, 0.18)}
                 whileHover={{ y: -10, borderColor: "rgba(134, 246, 196, 0.45)" }}
                 transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
               >
@@ -400,13 +425,9 @@ function App() {
               </motion.article>
             ))}
           </div>
-        </motion.section>
+        </section>
 
-        <motion.section
-          className="how-section reveal"
-          id="platform"
-          {...fadeUp}
-        >
+        <section className="how-section" id="platform">
           <div className="how-copy">
             <SectionHeading
               eyebrow="How it works"
@@ -415,19 +436,24 @@ function App() {
             />
 
             <div className="process-list">
-              {processSteps.map((step) => (
-                <article className="process-step" key={step.number}>
+              {processSteps.map((step, index) => (
+                <motion.article
+                  className="process-step"
+                  key={step.number}
+                  {...inViewMotion(index * 0.06, 0.25, 24)}
+                  whileHover={{ x: 8 }}
+                >
                   <span className="step-index">{step.number}</span>
                   <div>
                     <h3>{step.title}</h3>
                     <p>{step.copy}</p>
                   </div>
-                </article>
+                </motion.article>
               ))}
             </div>
           </div>
 
-          <div className="device-scene">
+          <Reveal className="device-scene" delay={0.12} y={24} blur={6} amount={0.25}>
             <div className="device-stack">
               <div className="device-layer layer-back" />
               <div className="device-layer layer-middle" />
@@ -447,15 +473,11 @@ function App() {
               <span>Detection</span>
               <span>Response</span>
             </div>
-          </div>
-        </motion.section>
+          </Reveal>
+        </section>
 
-        <motion.section
-          className="orbit-section reveal"
-          id="defense-stack"
-          {...fadeUp}
-        >
-          <div className="orbit-visual">
+        <section className="orbit-section" id="defense-stack">
+          <Reveal className="orbit-visual" amount={0.25}>
             <div className="orbit-core">
               <span className="brand-mark core-mark" />
               <p>Trusted across security teams, campuses and startup infra.</p>
@@ -470,16 +492,16 @@ function App() {
                 {item}
               </div>
             ))}
-          </div>
+          </Reveal>
 
           <SectionHeading
             eyebrow="Shared confidence"
             title="Designed to feel credible before a single metric loads."
             copy="The orbit section mirrors the social-proof geometry of the reference with centered glow, floating badges and tight monochrome contrast."
           />
-        </motion.section>
+        </section>
 
-        <motion.section className="pillar-section reveal" id="about" {...fadeUp}>
+        <section className="pillar-section" id="about">
           <SectionHeading
             eyebrow="Approach"
             title="Our approach to cyber defense"
@@ -488,10 +510,11 @@ function App() {
           />
 
           <div className="pillar-grid">
-            {pillars.map((pillar) => (
+            {pillars.map((pillar, index) => (
               <motion.article
-                className={`pillar-card ${pillar.tone} ${pillar.featured ? "featured" : ""}`}
+                className={`pillar-card interactive-card ${pillar.tone} ${pillar.featured ? "featured" : ""}`}
                 key={pillar.number}
+                {...inViewMotion(index * 0.07, 0.2, 34)}
                 whileHover={{ y: -12 }}
               >
                 <span className="pillar-number">{pillar.number}</span>
@@ -499,13 +522,9 @@ function App() {
               </motion.article>
             ))}
           </div>
-        </motion.section>
+        </section>
 
-        <motion.section
-          className="dashboard-section reveal"
-          id="dashboard"
-          {...fadeUp}
-        >
+        <section className="dashboard-section" id="dashboard">
           <SectionHeading
             eyebrow="Monitoring dashboard"
             title="A dashboard preview inspired by the reference control room."
@@ -513,7 +532,7 @@ function App() {
           />
 
           <div className="dashboard-shell">
-            <aside className="dashboard-rail" aria-label="Dashboard navigation">
+            <Reveal className="dashboard-rail" amount={0.35} y={18} blur={6}>
               <span className="rail-dot active" />
               <span className="rail-dot" />
               <span className="rail-dot" />
@@ -521,9 +540,9 @@ function App() {
               <span className="rail-divider" />
               <span className="rail-dot small" />
               <span className="rail-dot small" />
-            </aside>
+            </Reveal>
 
-            <div className="dashboard-main">
+            <Reveal className="dashboard-main" delay={0.06} amount={0.2}>
               <div className="dashboard-topbar">
                 <div className="search-shell">Search incidents, assets, reports</div>
                 <div className="date-shell">Today, Mar. 28</div>
@@ -531,68 +550,99 @@ function App() {
               </div>
 
               <div className="stat-grid">
-                <article className="stat-card accent">
-                  <span>Total alerts</span>
-                  <strong>4,372</strong>
-                  <em>+15%</em>
-                </article>
-                <article className="stat-card">
-                  <span>Tagged assets</span>
-                  <strong>120</strong>
-                  <em>+15%</em>
-                </article>
-                <article className="stat-card">
-                  <span>Critical incidents</span>
-                  <strong>1,572</strong>
-                  <em>-5%</em>
-                </article>
-                <article className="stat-card">
-                  <span>Analysts online</span>
-                  <strong>572</strong>
-                  <em>+10%</em>
-                </article>
+                {dashboardStats.map((stat, index) => (
+                  <motion.article
+                    key={stat.label}
+                    className={`stat-card interactive-card ${stat.accent ? "accent" : ""}`}
+                    {...inViewMotion(index * 0.05, 0.5, 24)}
+                    whileHover={{ y: -8 }}
+                  >
+                    <span>{stat.label}</span>
+                    <AnimatedNumber className="dashboard-metric-value" value={stat.value} />
+                    <em>{stat.delta}</em>
+                  </motion.article>
+                ))}
               </div>
 
-              <section className="timeline-panel">
+              <motion.section
+                className="timeline-panel interactive-panel"
+                {...inViewMotion(0.08, 0.25, 26)}
+              >
                 <div className="panel-title-row">
                   <h3>Incident timeline - Finance-DB-01</h3>
                   <span>Live orchestration</span>
                 </div>
 
                 <div className="timeline-track">
-                  {incidentTimeline.map((item) => (
-                    <article className={`timeline-point ${item.tone}`} key={item.time}>
+                  {incidentTimeline.map((item, index) => (
+                    <motion.article
+                      className={`timeline-point ${item.tone}`}
+                      key={item.time}
+                      {...inViewMotion(index * 0.06, 0.65, 18)}
+                    >
                       <div className="timeline-label">{item.label}</div>
                       <div className="timeline-stem" />
                       <div className="timeline-node" />
                       <div className="timeline-time">{item.time}</div>
-                    </article>
+                    </motion.article>
                   ))}
                 </div>
-              </section>
+              </motion.section>
 
               <div className="chart-row">
-                <section className="chart-panel">
+                <motion.section
+                  className="chart-panel interactive-panel"
+                  {...inViewMotion(0.1, 0.25, 24)}
+                >
                   <div className="panel-title-row">
                     <h3>Total vulnerability</h3>
                     <span>Hourly trend</span>
                   </div>
 
-                  <svg viewBox="0 0 540 240" className="line-chart" aria-hidden="true">
-                    <polyline
+                  <motion.svg viewBox="0 0 540 240" className="line-chart" aria-hidden="true">
+                    <motion.polyline
                       points="20,170 80,164 140,166 200,112 260,142 320,146 380,96 440,108 500,150"
                       className="line-chart-secondary"
+                      initial={{ pathLength: 0, opacity: 0 }}
+                      whileInView={{ pathLength: 1, opacity: 1 }}
+                      viewport={{ once: true, amount: 0.65 }}
+                      transition={{ duration: 1.4, delay: 0.2, ease: "easeOut" }}
                     />
-                    <polyline
+                    <motion.polyline
                       points="20,134 80,126 140,128 200,88 260,84 320,114 380,70 440,80 500,134"
                       className="line-chart-primary"
+                      initial={{ pathLength: 0, opacity: 0 }}
+                      whileInView={{ pathLength: 1, opacity: 1 }}
+                      viewport={{ once: true, amount: 0.65 }}
+                      transition={{ duration: 1.55, delay: 0.32, ease: "easeOut" }}
                     />
-                    <circle cx="200" cy="88" r="7" className="line-point" />
-                    <circle cx="380" cy="70" r="7" className="line-point accent" />
-                  </svg>
-                </section>
+                    <motion.circle
+                      cx="200"
+                      cy="88"
+                      r="7"
+                      className="line-point"
+                      initial={{ scale: 0, opacity: 0 }}
+                      whileInView={{ scale: 1, opacity: 1 }}
+                      viewport={{ once: true, amount: 0.8 }}
+                      transition={{ duration: 0.45, delay: 1 }}
+                    />
+                    <motion.circle
+                      cx="380"
+                      cy="70"
+                      r="7"
+                      className="line-point accent"
+                      initial={{ scale: 0, opacity: 0 }}
+                      whileInView={{ scale: 1, opacity: 1 }}
+                      viewport={{ once: true, amount: 0.8 }}
+                      transition={{ duration: 0.45, delay: 1.18 }}
+                    />
+                  </motion.svg>
+                </motion.section>
 
-                <section className="chart-panel severity-panel">
+                <motion.section
+                  className="chart-panel severity-panel interactive-panel"
+                  {...inViewMotion(0.16, 0.25, 24)}
+                >
                   <div className="panel-title-row">
                     <h3>Current threats by severity level</h3>
                     <span>Last 6 months</span>
@@ -600,10 +650,18 @@ function App() {
 
                   <div className="severity-grid">
                     <div className="bar-group">
-                      {threatColumns.map((item) => (
+                      {threatColumns.map((item, index) => (
                         <div className="bar-column" key={item.label}>
-                          <span
+                          <motion.span
                             className={item.accent ? "bar accent" : "bar"}
+                            initial={{ scaleY: 0.05, opacity: 0.4 }}
+                            whileInView={{ scaleY: 1, opacity: 1 }}
+                            viewport={{ once: true, amount: 0.8 }}
+                            transition={{
+                              duration: 0.9,
+                              delay: 0.18 + index * 0.08,
+                              ease: [0.22, 1, 0.36, 1]
+                            }}
                             style={{ height: `${item.value}%` }}
                           />
                           <small>{item.label}</small>
@@ -612,21 +670,26 @@ function App() {
                     </div>
 
                     <div className="severity-tiles">
-                      {severityTiles.map((tile) => (
-                        <div className="severity-tile" key={tile}>
+                      {severityTiles.map((tile, index) => (
+                        <motion.div
+                          className="severity-tile interactive-card"
+                          key={tile}
+                          {...inViewMotion(0.28 + index * 0.05, 0.6, 16)}
+                          whileHover={{ y: -6, scale: 1.02 }}
+                        >
                           {tile}
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
                   </div>
-                </section>
+                </motion.section>
               </div>
-            </div>
+            </Reveal>
           </div>
-        </motion.section>
+        </section>
 
-        <motion.section className="report-section reveal" id="resources" {...fadeUp}>
-          <div className="report-card">
+        <section className="report-section" id="resources">
+          <Reveal className="report-card" amount={0.25}>
             <SectionHeading
               eyebrow="Threat report"
               title="Executive-ready summaries without losing operator depth."
@@ -634,31 +697,39 @@ function App() {
             />
 
             <div className="report-grid">
-              <div className="report-metric">
-                <span>System efficiency</span>
-                <strong>99.2%</strong>
-                <div className="progress-track">
-                  <span style={{ width: "82%" }} />
-                </div>
-              </div>
-              <div className="report-metric">
-                <span>Threat remediation</span>
-                <strong>87.4%</strong>
-                <div className="progress-track">
-                  <span style={{ width: "68%" }} />
-                </div>
-              </div>
-              <div className="report-metric">
-                <span>Analyst focus time</span>
-                <strong>74.8%</strong>
-                <div className="progress-track">
-                  <span style={{ width: "59%" }} />
-                </div>
-              </div>
+              {reportMetrics.map((item, index) => (
+                <motion.div
+                  className="report-metric interactive-card"
+                  key={item.label}
+                  {...inViewMotion(index * 0.08, 0.35, 18)}
+                  whileHover={{ y: -6 }}
+                >
+                  <span>{item.label}</span>
+                  <AnimatedNumber
+                    className="report-metric-value"
+                    value={item.value}
+                    decimals={item.decimals}
+                    suffix={item.suffix}
+                  />
+                  <div className="progress-track">
+                    <motion.span
+                      initial={{ scaleX: 0 }}
+                      whileInView={{ scaleX: 1 }}
+                      viewport={{ once: true, amount: 0.95 }}
+                      transition={{
+                        duration: 1,
+                        delay: 0.3 + index * 0.1,
+                        ease: [0.22, 1, 0.36, 1]
+                      }}
+                      style={{ width: item.width }}
+                    />
+                  </div>
+                </motion.div>
+              ))}
             </div>
-          </div>
+          </Reveal>
 
-          <div className="faq-card">
+          <Reveal className="faq-card" delay={0.08} amount={0.25}>
             <SectionHeading
               eyebrow="Key questions"
               title="Positioning the experience around clarity, not noise."
@@ -666,18 +737,23 @@ function App() {
             />
 
             <div className="faq-list">
-              {faqs.map((faq) => (
-                <article className="faq-item" key={faq.question}>
+              {faqs.map((faq, index) => (
+                <motion.article
+                  className="faq-item interactive-card"
+                  key={faq.question}
+                  {...inViewMotion(index * 0.07, 0.35, 16)}
+                  whileHover={{ y: -6 }}
+                >
                   <h3>{faq.question}</h3>
                   <p>{faq.answer}</p>
-                </article>
+                </motion.article>
               ))}
             </div>
-          </div>
-        </motion.section>
+          </Reveal>
+        </section>
 
-        <motion.section className="cta-section reveal" id="contact" {...fadeUp}>
-          <div className="cta-card">
+        <section className="cta-section" id="contact">
+          <Reveal className="cta-card" amount={0.35}>
             <span className="eyebrow">Start now</span>
             <h2>Stay Secure. Stay Ahead.</h2>
             <p>
@@ -687,15 +763,25 @@ function App() {
             </p>
 
             <div className="hero-actions">
-              <a className="button button-primary" href="mailto:hello@netshield.ai">
+              <motion.a
+                className="button button-primary"
+                href="mailto:hello@netshield.ai"
+                whileHover={{ y: -4, scale: 1.02 }}
+                whileTap={{ scale: 0.985 }}
+              >
                 Book a Demo
-              </a>
-              <a className="button button-secondary" href="#top">
+              </motion.a>
+              <motion.a
+                className="button button-secondary"
+                href="#top"
+                whileHover={{ y: -4, scale: 1.02 }}
+                whileTap={{ scale: 0.985 }}
+              >
                 Back to Top
-              </a>
+              </motion.a>
             </div>
-          </div>
-        </motion.section>
+          </Reveal>
+        </section>
       </main>
     </div>
   );

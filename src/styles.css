@@ -1,5 +1,6 @@
 :root {
   color-scheme: dark;
+  --scroll-velocity: 0;
   --bg: #030605;
   --bg-elevated: rgba(13, 18, 16, 0.88);
   --bg-panel: rgba(14, 18, 17, 0.94);
@@ -28,6 +29,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 120px;
 }
 
 body {
@@ -166,7 +168,21 @@ svg {
 }
 
 .nav-links a {
+  position: relative;
   transition: color 180ms ease;
+}
+
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  width: 100%;
+  height: 1px;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: linear-gradient(90deg, rgba(7, 165, 233, 0.6), rgba(223, 255, 94, 0.9));
+  transition: transform 220ms ease;
 }
 
 .nav-links a:hover,
@@ -174,8 +190,16 @@ svg {
   color: var(--text);
 }
 
+.nav-links a:hover::after,
+.nav-links a:focus-visible::after {
+  transform: scaleX(1);
+}
+
 .nav-cta,
 .button {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -187,12 +211,29 @@ svg {
   transition:
     transform 220ms ease,
     border-color 220ms ease,
-    background-color 220ms ease;
+    background-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.nav-cta::before,
+.button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: translateX(-120%) skewX(-18deg);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+  transition: transform 560ms ease;
 }
 
 .nav-cta:hover,
 .button:hover {
   transform: translateY(-2px);
+}
+
+.nav-cta:hover::before,
+.button:hover::before {
+  transform: translateX(120%) skewX(-18deg);
 }
 
 .hero-card {
@@ -221,6 +262,8 @@ svg {
 .hero-constellation {
   position: absolute;
   inset: 0;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .hero-copy {
@@ -253,6 +296,12 @@ svg {
   font-weight: 500;
   line-height: 0.98;
   letter-spacing: -0.04em;
+}
+
+.hero-copy h1,
+.section-heading h2,
+.cta-card h2 {
+  text-wrap: balance;
 }
 
 .hero-copy h1 {
@@ -318,6 +367,15 @@ svg {
   gap: 6px;
 }
 
+.hero-metric-value,
+.dashboard-metric-value,
+.report-metric-value {
+  display: inline-block;
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  transform-origin: center center;
+}
+
 .hero-badge span,
 .panel-title-row span,
 .timeline-time,
@@ -327,14 +385,13 @@ svg {
 .profile-shell,
 .service-arrow,
 .severity-tile,
-.report-metric strong,
+.report-metric-value,
 .pillar-number {
   font-size: 0.92rem;
 }
 
-.hero-badge strong {
+.hero-metric-value {
   font-size: 2rem;
-  font-weight: 600;
 }
 
 .hero-badge em {
@@ -400,6 +457,7 @@ svg {
   background: rgba(17, 22, 20, 0.7);
   color: rgba(248, 252, 250, 0.92);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  animation: float-drift 5.5s ease-in-out infinite;
 }
 
 .chip-left {
@@ -464,6 +522,35 @@ svg {
   border: 1px solid rgba(255, 255, 255, 0.09);
   background:
     linear-gradient(180deg, rgba(19, 24, 23, 0.82), rgba(8, 9, 9, 0.94));
+  transition:
+    transform 240ms ease,
+    box-shadow 240ms ease,
+    border-color 240ms ease;
+}
+
+.service-card::before,
+.stat-card::before,
+.report-metric::before,
+.faq-item::before,
+.pillar-card::before,
+.hero-badge::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at var(--spot-x, 50%) var(--spot-y, 0%), rgba(223, 255, 94, 0.12), transparent 48%);
+  opacity: 0;
+  transition: opacity 220ms ease;
+  pointer-events: none;
+}
+
+.service-card:hover::before,
+.stat-card:hover::before,
+.report-metric:hover::before,
+.faq-item:hover::before,
+.pillar-card:hover::before,
+.hero-badge:hover::before {
+  opacity: 1;
 }
 
 .service-card h3,
@@ -525,6 +612,7 @@ svg {
   align-items: start;
   padding: 18px 0;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 220ms ease, border-color 220ms ease;
 }
 
 .step-index {
@@ -537,6 +625,13 @@ svg {
   border: 1px solid rgba(255, 255, 255, 0.18);
   color: rgba(255, 255, 255, 0.84);
   font-size: 0.85rem;
+  transition: transform 240ms ease, border-color 240ms ease, box-shadow 240ms ease;
+}
+
+.process-step:hover .step-index {
+  transform: scale(1.08) rotate(6deg);
+  border-color: rgba(223, 255, 94, 0.44);
+  box-shadow: 0 0 18px rgba(223, 255, 94, 0.12);
 }
 
 .device-scene {
@@ -568,11 +663,13 @@ svg {
 .layer-back {
   top: 8%;
   opacity: 0.3;
+  animation: layer-float 7s ease-in-out infinite;
 }
 
 .layer-middle {
   top: 22%;
   opacity: 0.45;
+  animation: layer-float 6s ease-in-out infinite reverse;
 }
 
 .layer-front {
@@ -585,6 +682,7 @@ svg {
     inset 0 1px 0 rgba(255, 255, 255, 0.12),
     0 0 0 1px rgba(255, 255, 255, 0.05),
     0 35px 80px rgba(0, 0, 0, 0.46);
+  animation: layer-float 5.2s ease-in-out infinite;
 }
 
 .layer-front::after {
@@ -614,6 +712,7 @@ svg {
   height: 2px;
   border-radius: 999px;
   background: linear-gradient(90deg, rgba(7, 165, 233, 0.8), rgba(7, 233, 109, 0.9));
+  box-shadow: 0 0 14px rgba(7, 233, 109, 0.2);
 }
 
 .hero-grid-line.short {
@@ -734,6 +833,7 @@ svg {
     translateY(-190px)
     rotate(calc(var(--chip-index) * -45deg));
   white-space: nowrap;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
 }
 
 .pillar-grid {
@@ -756,6 +856,10 @@ svg {
     linear-gradient(180deg, rgba(39, 42, 40, 0.66), rgba(20, 21, 20, 0.95)),
     rgba(255, 255, 255, 0.02);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition:
+    transform 240ms ease,
+    box-shadow 240ms ease,
+    border-color 240ms ease;
 }
 
 .pillar-card.sm {
@@ -819,6 +923,7 @@ svg {
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 220ms ease, box-shadow 220ms ease;
 }
 
 .rail-dot.active,
@@ -830,6 +935,11 @@ svg {
 .rail-dot.small {
   width: 42px;
   height: 42px;
+}
+
+.dashboard-rail:hover .rail-dot.active,
+.dashboard-rail:hover .rail-dot.small {
+  box-shadow: 0 0 26px rgba(223, 255, 94, 0.16);
 }
 
 .rail-divider {
@@ -870,11 +980,16 @@ svg {
 }
 
 .stat-card {
+  position: relative;
   min-height: 168px;
   padding: 24px;
   display: grid;
   align-content: start;
   gap: 10px;
+  transition:
+    transform 240ms ease,
+    border-color 240ms ease,
+    box-shadow 240ms ease;
 }
 
 .stat-card.accent {
@@ -893,6 +1008,10 @@ svg {
   font-size: clamp(2.8rem, 4vw, 4rem);
   font-weight: 600;
   letter-spacing: -0.05em;
+}
+
+.dashboard-metric-value {
+  font-size: clamp(2.8rem, 4vw, 4rem);
 }
 
 .stat-card em {
@@ -964,6 +1083,7 @@ svg {
   background:
     radial-gradient(circle at 50% 50%, var(--lime) 0%, var(--lime) 26%, rgba(255, 255, 255, 0.14) 27%);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  animation: node-pulse 2.6s ease-in-out infinite;
 }
 
 .timeline-time {
@@ -995,6 +1115,7 @@ svg {
 .line-chart polyline {
   fill: none;
   stroke-width: 3;
+  filter: drop-shadow(0 0 10px rgba(7, 233, 109, 0.14));
 }
 
 .line-chart-primary {
@@ -1007,6 +1128,7 @@ svg {
 
 .line-point {
   fill: rgba(223, 255, 94, 0.92);
+  filter: drop-shadow(0 0 12px rgba(223, 255, 94, 0.28));
 }
 
 .line-point.accent {
@@ -1041,6 +1163,8 @@ svg {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(76, 80, 77, 0.5));
   border: 1px solid rgba(255, 255, 255, 0.08);
+  transform-origin: bottom center;
+  will-change: transform;
 }
 
 .bar.accent {
@@ -1068,6 +1192,10 @@ svg {
   text-align: center;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.04);
+  transition:
+    transform 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease;
 }
 
 .report-section {
@@ -1091,13 +1219,18 @@ svg {
 
 .report-metric,
 .faq-item {
+  position: relative;
   padding: 22px;
   border-radius: 22px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.03);
+  transition:
+    transform 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease;
 }
 
-.report-metric strong {
+.report-metric-value {
   display: block;
   margin-top: 8px;
   font-size: 2rem;
@@ -1116,6 +1249,7 @@ svg {
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--aqua), var(--green), var(--lime));
+  transform-origin: left center;
 }
 
 .faq-item h3 {
@@ -1142,9 +1276,74 @@ svg {
     linear-gradient(180deg, rgba(14, 18, 17, 0.96), rgba(4, 5, 4, 0.98));
 }
 
+.interactive-card,
+.interactive-panel {
+  transform-style: preserve-3d;
+}
+
+.interactive-panel {
+  transition:
+    transform 240ms ease,
+    box-shadow 240ms ease,
+    border-color 240ms ease;
+}
+
+.interactive-card:hover,
+.interactive-panel:hover {
+  border-color: rgba(133, 242, 194, 0.24);
+  box-shadow:
+    0 28px 72px rgba(0, 0, 0, 0.36),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+@keyframes float-drift {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes layer-float {
+  0%,
+  100% {
+    transform: translateX(-50%) rotateX(65deg) rotateZ(-28deg) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) rotateX(65deg) rotateZ(-28deg) translateY(-10px);
+  }
+}
+
+@keyframes node-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(223, 255, 94, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(223, 255, 94, 0);
+  }
+}
+
 .cta-card p {
   max-width: 720px;
   margin-top: 18px;
+}
+
+@media (max-width: 1024px), (prefers-reduced-motion: reduce) {
+  .hero-constellation {
+    display: none;
+  }
+
+  .hero-float,
+  .orbital-chip,
+  .timeline-node,
+  .layer-back,
+  .layer-middle,
+  .layer-front {
+    animation: none;
+  }
 }
 
 @media (max-width: 1200px) {
