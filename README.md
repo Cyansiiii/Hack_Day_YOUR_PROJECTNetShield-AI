@@ -1,4 +1,4 @@
-# NetShield AI Frontend
+# NetShield AI 
 
 NetShield AI is a cinematic cybersecurity landing page and dashboard-style frontend built for a real-time network monitoring and intrusion detection product.
 
