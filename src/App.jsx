@@ -15,6 +15,8 @@ const navigation = [
   "About"
 ];
 
+const githubRepoUrl = "https://github.com/Cyansiiii/Hack_Day_YOUR_PROJECTNetShield-AI.git";
+
 const services = [
   {
     title: "Live traffic visibility",
@@ -245,6 +247,14 @@ function Icon({ type }) {
   }
 }
 
+function GitHubIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 2C6.48 2 2 6.58 2 12.22c0 4.5 2.87 8.32 6.84 9.67.5.1.68-.22.68-.49 0-.24-.01-1.04-.01-1.88-2.78.62-3.37-1.21-3.37-1.21-.46-1.19-1.11-1.5-1.11-1.5-.91-.64.07-.63.07-.63 1 .08 1.53 1.05 1.53 1.05.9 1.57 2.35 1.11 2.92.85.09-.67.35-1.11.63-1.37-2.22-.26-4.55-1.14-4.55-5.08 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.74 0 0 .84-.28 2.75 1.05A9.33 9.33 0 0 1 12 6.84c.85 0 1.7.12 2.5.36 1.9-1.33 2.74-1.05 2.74-1.05.55 1.43.21 2.48.11 2.74.64.72 1.03 1.63 1.03 2.75 0 3.95-2.33 4.81-4.56 5.07.36.32.68.95.68 1.92 0 1.39-.01 2.51-.01 2.85 0 .27.18.59.69.49A10.18 10.18 0 0 0 22 12.22C22 6.58 17.52 2 12 2Z" />
+    </svg>
+  );
+}
+
 function SectionHeading({ eyebrow, title, copy, align = "left" }) {
   return (
     <Reveal className={`section-heading ${align}`} y={34} blur={12} amount={0.4}>
@@ -325,6 +335,14 @@ function App() {
                   {item}
                 </a>
               ))}
+              <a
+                className="nav-github"
+                href={githubRepoUrl}
+                aria-label="Open NetShield AI GitHub repository"
+                title="GitHub Repository"
+              >
+                <GitHubIcon />
+              </a>
             </nav>
 
             <a className="nav-cta" href="#contact">

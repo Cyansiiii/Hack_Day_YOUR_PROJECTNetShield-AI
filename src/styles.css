@@ -195,6 +195,42 @@ svg {
   transform: scaleX(1);
 }
 
+.nav-github {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(245, 246, 242, 0.88);
+  transition:
+    transform 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    background-color 220ms ease;
+}
+
+.nav-github::after {
+  display: none;
+}
+
+.nav-github svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  stroke: none;
+}
+
+.nav-github:hover,
+.nav-github:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(133, 242, 194, 0.34);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+}
+
 .nav-cta,
 .button {
   position: relative;
